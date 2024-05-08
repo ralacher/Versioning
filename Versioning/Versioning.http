@@ -1,0 +1,6 @@
+@Versioning_HostAddress = http://localhost:5129
+
+GET {{Versioning_HostAddress}}/weatherforecast/
+Accept: application/json
+
+###

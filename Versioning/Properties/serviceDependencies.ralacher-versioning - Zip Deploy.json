@@ -1,0 +1,9 @@
+{
+  "dependencies": {
+    "apis1": {
+      "apiEndpoint": "https://ralacher-apim.azure-api.net/versioning",
+      "resourceId": "/subscriptions/[parameters('subscriptionId')]/resourceGroups/[parameters('resourceGroupName')]/providers/Microsoft.ApiManagement/service/ralacher-apim/apis/Dotnet-Versioning-v2",
+      "type": "apis.azure"
+    }
+  }
+}
