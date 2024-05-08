@@ -9,7 +9,7 @@ namespace Versioning.V1.Controllers
 {
     [ApiController]
     [ApiVersion( 1.0 )]
-    [Route("V{version:apiVersion}/[controller]")]
+    [Route("[controller]")]
     public class CosmosController : ControllerBase
     {
 
