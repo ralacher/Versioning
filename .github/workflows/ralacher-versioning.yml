@@ -13,7 +13,7 @@ env:
   AZURE_APIM_APPSERVICEURL: https://ralacher-versioning.azurewebsites.net
   SWASHBUCLE_ASPNET_CORE_CLI_PACKAGE_VERSION: 6.5.0
   SWASHBUCKLE_DOTNET_CORE_VERSION: 3.1.x
-  API_IMPORT_SPECIFICATION_PATH: Versioning/publisH
+  API_IMPORT_SPECIFICATION_PATH: Versioning/publish
   API_IMPORT_DLL: Versioning/bin/Release/net7.0/Versioning.dll
   CONFIGURATION: Release
   DOTNET_CORE_VERSION: 7.0.x
