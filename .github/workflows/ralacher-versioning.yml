@@ -11,11 +11,10 @@ env:
   AZURE_APIM_SERVICENAME: ralacher-apim
   AZURE_APIM_API_ID: Dotnet-Versioning
   AZURE_APIM_APPSERVICEURL: https://ralacher-versioning.azurewebsites.net
-  SWASHBUCLE_ASPNET_CORE_CLI_PACKAGE_VERSION: 5.6.3
+  SWASHBUCLE_ASPNET_CORE_CLI_PACKAGE_VERSION: 6.5.0
   SWASHBUCKLE_DOTNET_CORE_VERSION: 3.1.x
-  API_IMPORT_SPECIFICATION_PATH: Versioning/publish/swagger.json
+  API_IMPORT_SPECIFICATION_PATH: Versioning/publish
   API_IMPORT_DLL: Versioning/bin/Release/net7.0/Versioning.dll
-  API_IMPORT_VERSION: v1
   CONFIGURATION: Release
   DOTNET_CORE_VERSION: 7.0.x
   WORKING_DIRECTORY: Versioning
@@ -28,10 +27,10 @@ jobs:
       uses: actions/setup-dotnet@v3
       with:
         dotnet-version: ${{ env.DOTNET_CORE_VERSION }}
-    - name: Setup SwashBuckle .NET Core
-      uses: actions/setup-dotnet@v3
-      with:
-        dotnet-version: ${{ env.SWASHBUCKLE_DOTNET_CORE_VERSION }}
+    #- name: Setup SwashBuckle .NET Core
+    #  uses: actions/setup-dotnet@v3
+    #  with:
+    #    dotnet-version: ${{ env.SWASHBUCKLE_DOTNET_CORE_VERSION }}
     - name: Restore
       run: dotnet restore ${{ env.WORKING_DIRECTORY }}
     - name: Build
@@ -44,7 +43,9 @@ jobs:
       run: dotnet tool install --global Swashbuckle.AspNetCore.Cli --version ${{ env.SWASHBUCLE_ASPNET_CORE_CLI_PACKAGE_VERSION }}
       working-directory: ${{ env.WORKING_DIRECTORY }}
     - name: Generate Open API Specification Document
-      run: swagger tofile --output "${{ env.API_IMPORT_SPECIFICATION_PATH }}" "${{ env.API_IMPORT_DLL }}" "${{ env.API_IMPORT_VERSION }}"
+      run: |
+        swagger tofile --output "${{ env.API_IMPORT_SPECIFICATION_PATH }}/v1.json" "${{ env.API_IMPORT_DLL }}" "v1"
+        swagger tofile --output "${{ env.API_IMPORT_SPECIFICATION_PATH }}/v2.json" "${{ env.API_IMPORT_DLL }}" "v2"
     - name: Publish Artifacts
       uses: actions/upload-artifact@v3
       with:
@@ -59,18 +60,19 @@ jobs:
       with:
         name: webapp
         path: ${{ env.AZURE_WEBAPP_PACKAGE_PATH }}
+    - name: Azure Login
+      uses: azure/login@v1
+      with:
+        creds: ${{ secrets.AZURE_CREDENTIAL }}
     - name: Deploy to Azure WebApp
       uses: azure/webapps-deploy@v2
       with:
         app-name: ${{ env.AZURE_WEBAPP_NAME }}
         package: ${{ env.AZURE_WEBAPP_PACKAGE_PATH }}
-        publish-profile: ${{ secrets.ralacher_versioning_97F5 }}
-    - name: Azure Login
-      uses: azure/login@v1
-      with:
-        creds: ${{ secrets.ralacher_apim_SPN }}
     - name: Import API into Azure API Management
-      run: az apim api import --path "${{ env.AZURE_APIM_RESOURCE_PATH }}" --resource-group "${{ env.AZURE_APIM_RESOURCEGROUP }}" --service-name "${{ env.AZURE_APIM_SERVICENAME }}" --api-id "${{ env.AZURE_APIM_API_ID }}" --service-url "${{ env.AZURE_APIM_APPSERVICEURL }}" --specification-path "${{ env.API_IMPORT_SPECIFICATION_PATH }}" --specification-format OpenApi --subscription-required false
+      run: |
+        az apim api import --path "${{ env.AZURE_APIM_RESOURCE_PATH }}" --resource-group "${{ env.AZURE_APIM_RESOURCEGROUP }}" --service-name "${{ env.AZURE_APIM_SERVICENAME }}" --api-id "Dotnet-Versioning" --service-url "${{ env.AZURE_APIM_APPSERVICEURL }}" --specification-path "${{ env.API_IMPORT_SPECIFICATION_PATH }}/v1.json" --specification-format OpenApi --subscription-required false
+        az apim api import --path "${{ env.AZURE_APIM_RESOURCE_PATH }}" --resource-group "${{ env.AZURE_APIM_RESOURCEGROUP }}" --service-name "${{ env.AZURE_APIM_SERVICENAME }}" --api-id "Dotnet-Versioning-v2" --service-url "${{ env.AZURE_APIM_APPSERVICEURL }}" --specification-path "${{ env.API_IMPORT_SPECIFICATION_PATH }}/v2.json" --specification-format OpenApi --subscription-required false
     - name: logout
       run: >
         az logout
